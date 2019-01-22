@@ -1,0 +1,499 @@
+CREATE TABLE member(
+	LibCard NUMBER(10) CHECK (LENGTH(LibCard) = 10),
+	Email VARCHAR2(50) NOT NULL,
+	Phone VARCHAR2(12) CHECK (LENGTH(Phone) = 12) NOT NULL,
+	Name VARCHAR2(50) NOT NULL,
+	Street VARCHAR2(50) NOT NULL,
+	Province CHAR(2) NOT NULL,
+	City VARCHAR2(28) NOT NULL,
+	PostalCode VARCHAR2(7) CHECK (LENGTH(PostalCode) = 7) NOT NULL,
+	PRIMARY KEY(LibCard)
+);
+
+CREATE TABLE supplier(
+	SName VARCHAR2(50),
+	Phone VARCHAR2(12) NOT NULL,
+	PRIMARY KEY(SName)
+);
+
+CREATE TABLE book(
+	Isbn VARCHAR2(14) CHECK (LENGTH(Isbn) = 14),
+	Title VARCHAR2(50) NOT NULL,
+	Author VARCHAR2(50) NOT NULL,
+	Genre VARCHAR(25) NOT NULL,
+	PRIMARY KEY(Isbn)
+);
+
+CREATE TABLE movie(
+	Eidr VARCHAR2(34),
+	Title VARCHAR2(50) NOT NULL,
+	Director VARCHAR2(50) NOT NULL,
+	Genre VARCHAR(25) NOT NULL,
+	PRIMARY KEY(Eidr)
+);
+
+CREATE TABLE bcopy(
+	Isbn VARCHAR2(14),
+	CopyNum VARCHAR2(3),
+	PRIMARY KEY(Isbn, CopyNum),
+	FOREIGN KEY(Isbn) REFERENCES book(Isbn)
+);
+
+CREATE TABLE mcopy(
+	Eidr VARCHAR2(34),
+	CopyNum VARCHAR2(3),
+	PRIMARY KEY(Eidr, CopyNum),
+	FOREIGN KEY(Eidr) REFERENCES movie(Eidr)
+);
+
+CREATE TABLE bborrow(
+	LibCard NUMBER(10),
+	Isbn VARCHAR2(14),
+	CopyNum VARCHAR2(3),
+	DueDate DATE NOT NULL,
+	ReturnDate DATE,
+	PRIMARY KEY(LibCard, Isbn, CopyNum),
+	FOREIGN KEY(LibCard) REFERENCES member(LibCard),
+	FOREIGN KEY(Isbn, CopyNum) REFERENCES bcopy(Isbn, CopyNum)
+);
+
+CREATE TABLE mborrow(
+	LibCard NUMBER(10),
+	Eidr VARCHAR2(34),
+	CopyNum VARCHAR2(3),
+	DueDate DATE NOT NULL,
+	ReturnDate DATE,
+	PRIMARY KEY(LibCard, Eidr, CopyNum),
+	FOREIGN KEY(LibCard) REFERENCES member(LibCard),
+	FOREIGN KEY(Eidr, CopyNum) REFERENCES mcopy(Eidr, CopyNum)
+);
+
+CREATE TABLE bhold(
+	LibCard NUMBER(10),
+	Isbn VARCHAR2(14),
+	PlaceNum VARCHAR2(3) NOT NULL,
+	HoldDate Date NOT NULL,
+	PRIMARY KEY(LibCard, Isbn),
+	FOREIGN KEY(LibCard) REFERENCES member(LibCard),
+	FOREIGN KEY(Isbn) REFERENCES book(Isbn)
+);
+
+CREATE TABLE mhold(
+	LibCard NUMBER(10),
+	Eidr VARCHAR2(34),
+	PlaceNum VARCHAR2(3) NOT NULL,
+	HoldDate DATE NOT NULL,
+	PRIMARY KEY(LibCard, Eidr),
+	FOREIGN KEY(LibCard) REFERENCES member(LibCard),
+	FOREIGN KEY(Eidr) REFERENCES movie(Eidr)
+);
+
+CREATE TABLE bsupply(
+	Order# NUMBER(12) NOT NULL,
+	SName VARCHAR2(50) NOT NULL,
+	Isbn VARCHAR2(14),
+	Quantity NUMBER(3) CHECK (Quantity BETWEEN 1 AND 100) NOT NULL,
+	Shipped NUMBER(1) CHECK (Quantity BETWEEN 0 AND 1) NOT NULL,
+	PRIMARY KEY(Order#, SName),
+	FOREIGN KEY(SName) REFERENCES supplier(SName),
+	FOREIGN KEY(Isbn) REFERENCES book(Isbn)
+);
+
+CREATE TABLE msupply(
+  	Order# NUMBER(12) NOT NULL,
+	SName VARCHAR2(50) NOT NULL,
+	Eidr VARCHAR2(34),
+	Quantity NUMBER(3) CHECK (Quantity BETWEEN 1 AND 100) NOT NULL,
+	Shipped NUMBER(1) CHECK (Quantity BETWEEN 0 AND 1) NOT NULL,
+	PRIMARY KEY(Order#, SName),
+	FOREIGN KEY(SName) REFERENCES supplier(SName),
+	FOREIGN KEY(Eidr) REFERENCES movie(Eidr)
+);
+
+/* Decomposed Tables */
+/* member table split using BCNF algorithm */
+CREATE TABLE memcard(
+	LibCard NUMBER(10) CHECK (LENGTH(LibCard) = 10),
+	Email VARCHAR2(50) NOT NULL,
+	Phone VARCHAR2(12) CHECK (LENGTH(Phone) = 12) NOT NULL,
+	Name VARCHAR2(50) NOT NULL,
+	PRIMARY KEY(LibCard, Email)
+);
+
+CREATE TABLE memphone(
+	Phone VARCHAR2(12) CHECK (LENGTH(Phone) = 12) NOT NULL,
+	PostalCode VARCHAR2(7) CHECK (LENGTH(PostalCode) = 7) NOT NULL,
+	PRIMARY KEY(Phone)
+);
+
+CREATE TABLE mempostalcode(
+	PostalCode VARCHAR2(7) CHECK (LENGTH(PostalCode) = 7) NOT NULL,
+	Street VARCHAR2(50) NOT NULL,
+	PRIMARY KEY(PostalCode)
+);
+
+CREATE TABLE memstreet(
+	Street VARCHAR2(50) NOT NULL,
+	Province CHAR(2) NOT NULL,
+	City VARCHAR2(28) NOT NULL,
+	PRIMARY KEY(Street)
+);
+
+/* movie table split using Berstein algorithm */
+CREATE TABLE movtitle(
+	Eidr VARCHAR2(34),
+	Title VARCHAR2(50) NOT NULL,
+	PRIMARY KEY(Eidr, Title)
+);
+
+CREATE TABLE movdirector(
+	Title VARCHAR2(50) NOT NULL,
+	Director VARCHAR2(50) NOT NULL,
+	PRIMARY KEY(Title)
+);
+
+CREATE TABLE movgenre(
+	Title VARCHAR2(50) NOT NULL,
+	Genre VARCHAR(25) NOT NULL,
+	PRIMARY KEY(Title)
+);
+
+/* book table split using method shown in class (not a specific algorithm) */
+CREATE TABLE booktitle(
+	Isbn VARCHAR2(14) CHECK (LENGTH(Isbn) = 14),
+	Title VARCHAR2(50) NOT NULL,
+	PRIMARY KEY(Isbn)
+);
+
+CREATE TABLE bookinfo(
+	Title VARCHAR2(50) NOT NULL,
+	Author VARCHAR2(50) NOT NULL,
+	Genre VARCHAR(25) NOT NULL,
+	PRIMARY KEY(Title)
+);
+
+/* POPULATING TABLES */
+/* Entries for member */
+INSERT INTO member (LibCard,Email,Phone,Name,Street,Province,City,PostalCode)
+VALUES (1843174372, 'laura_alex32@gmail.com', '647-285-5511', 'Laura Alexander', '500 Kingston Rd', 'ON', 'Toronto', 'M4L 1V3');
+INSERT INTO member (LibCard,Email,Phone,Name,Street,Province,City,PostalCode)
+VALUES (5743830293, 'charlesMitch22@gmail.com', '647-093-7281','Charles Mitchell', '288 Placeholder Drive', 'ON', 'Toronto', 'M5M 1W4');
+INSERT INTO member (LibCard,Email,Phone,Name,Street,Province,City,PostalCode)
+VALUES (4721227627, 'jcampbell@gmail.com', '647-895-2482','Jean Campbell', '234 Willow Ave', 'ON', 'Toronto', 'M4E 3K7');
+INSERT INTO member (LibCard,Email,Phone,Name,Street,Province,City,PostalCode)
+VALUES (6200927500, 'ant_lee59@gmail.com', '416-699-8071','Anthony Lee', '26 Goodwood Park Cres', 'ON', 'East York', 'M4C 2G5');
+INSERT INTO member (LibCard,Email,Phone,Name,Street,Province,City,PostalCode)
+VALUES (8325076254, 'alperez@hotmail.com', '416-060-7895','Albert Perez', '1974 Queen St E', 'ON', 'Toronto', 'M4V 272');
+INSERT INTO member (LibCard,Email,Phone,Name,Street,Province,City,PostalCode)
+VALUES (2689960182, 'martinman@hotmail.com', '416-905-9459','Martin Kelly', '42 Balsam Ave', 'ON', 'Toronto', 'M4L 1H8');
+INSERT INTO member (LibCard,Email,Phone,Name,Street,Province,City,PostalCode)
+VALUES (2020763382, 'susan_allen94@hotmail.com', '416-590-9890','Susan Allen', '258 Waverley Rd', 'ON', 'Toronto', 'M4E 3B4');
+INSERT INTO member (LibCard,Email,Phone,Name,Street,Province,City,PostalCode)
+VALUES (3094648686, 'gloriaglory@yahoo.com', '416-184-9400','Gloria Martinez', '101 Hillingdon Ave', 'ON', 'Toronto', 'M4L 3TL');
+INSERT INTO member (LibCard,Email,Phone,Name,Street,Province,City,PostalCode)
+VALUES (9197832769, 'dennis_stew12@yahoo.com', '905-195-3161','Dennis Stewart', '4205 Shipp Dr', 'ON', 'Mississauga', 'L4Z 2Y9');
+INSERT INTO member (LibCard,Email,Phone,Name,Street,Province,City,PostalCode)
+VALUES (4315697185, 'jturner03@gmail.com', '905-686-9860','Joseph Turner', '3897 Seebring Cres', 'ON', 'Mississauga', 'L5L 3X8');
+INSERT INTO member (LibCard,Email,Phone,Name,Street,Province,City,PostalCode)
+VALUES (1843174371, 'john.doe@gmail.com', '647-555-4345', 'John Doe', '12 Fake Street', 'ON', 'London', 'N5V 2S5' );
+
+/* Entries for book */
+INSERT INTO book (Isbn, Title, Author, Genre)
+VALUES ('978-0345339706', 'The Lord of the Rings: The Fellowship of the Ring', 'J.R.R. Tolkien', 'Fantasy');
+INSERT INTO book (Isbn, Title, Author, Genre)
+VALUES ('978-0345339713', 'The Lord of the Rings: The Two Towers', 'J.R.R. Tolkien', 'Fantasy');
+INSERT INTO book (Isbn, Title, Author, Genre)
+VALUES ('978-0345339737', 'The Lord of the Rings: The Return of the King', 'J.R.R. Tolkien', 'Fantasy');
+INSERT INTO book (Isbn, Title, Author, Genre)
+VALUES ('978-0849945120', 'Thr3e', 'Ted Dekker', 'Thriller');
+INSERT INTO book (Isbn, Title, Author, Genre)
+VALUES ('978-0060935467', 'To Kill a Mockingbird', 'Harper Lee', 'Southern Gothic');
+
+/* Entries for bcopy */
+INSERT INTO bcopy (Isbn, CopyNum)
+VALUES ('978-0345339706', 1);
+INSERT INTO bcopy (Isbn, CopyNum)
+VALUES ('978-0345339706', 2);
+INSERT INTO bcopy (Isbn, CopyNum)
+VALUES ('978-0345339713', 1);
+INSERT INTO bcopy (Isbn, CopyNum)
+VALUES ('978-0345339713', 2);
+INSERT INTO bcopy (Isbn, CopyNum)
+VALUES ('978-0345339713', 3);
+INSERT INTO bcopy (Isbn, CopyNum)
+VALUES ('978-0345339737', 1);
+INSERT INTO bcopy (Isbn, CopyNum)
+VALUES ('978-0849945120', 1);
+INSERT INTO bcopy (Isbn, CopyNum)
+VALUES ('978-0849945120', 2);
+INSERT INTO bcopy (Isbn, CopyNum)
+VALUES ('978-0849945120', 3);
+INSERT INTO bcopy (Isbn, CopyNum)
+VALUES ('978-0060935467', 1);
+INSERT INTO bcopy (Isbn, CopyNum)
+VALUES ('978-0060935467', 2);
+
+/* Entries for bborrow */
+INSERT INTO bborrow (LibCard, Isbn, CopyNum, DueDate, ReturnDate)
+VALUES (1843174372, '978-0345339706', 1, TO_DATE('3-Jan-2019','yyy/mm/dd hh24:mi:ss'), NULL);
+INSERT INTO bborrow (LibCard, Isbn, CopyNum, DueDate, ReturnDate)
+VALUES (1843174372, '978-0849945120', 1, TO_DATE('3-Jan-2019','yyy/mm/dd hh24:mi:ss'), NULL);
+INSERT INTO bborrow (LibCard, Isbn, CopyNum, DueDate, ReturnDate)
+VALUES (1843174372, '978-0060935467', 1, TO_DATE('3-Jan-2019','yyy/mm/dd hh24:mi:ss'), NULL);
+INSERT INTO bborrow (LibCard, Isbn, CopyNum, DueDate, ReturnDate)
+VALUES (5743830293, '978-0345339706', 2, TO_DATE('1-Jan-2019','yyy/mm/dd hh24:mi:ss'), NULL);
+INSERT INTO bborrow (LibCard, Isbn, CopyNum, DueDate, ReturnDate)
+VALUES (4721227627, '978-0345339713', 1, TO_DATE('2-Jan-2019','yyy/mm/dd hh24:mi:ss'), NULL);
+INSERT INTO bborrow (LibCard, Isbn, CopyNum, DueDate, ReturnDate)
+VALUES (6200927500, '978-0345339713', 2, TO_DATE('5-Jan-2019','yyy/mm/dd hh24:mi:ss'), NULL);
+INSERT INTO bborrow (LibCard, Isbn, CopyNum, DueDate, ReturnDate)
+VALUES (8325076254, '978-0345339713', 3, TO_DATE('19-Jan-2019','yyy/mm/dd hh24:mi:ss'), NULL);
+
+/* Entries for supplier */
+/* Book suppliers */
+INSERT INTO supplier (SName,Phone)
+VALUES ('Henderson Press',18775556269);
+INSERT INTO supplier (SName,Phone)
+VALUES ('Kingfisher Publications',18775557654);
+INSERT INTO supplier (SName,Phone)
+VALUES ('Pygmy Press',18775553745);
+/* Movie suppliers */
+INSERT INTO supplier (SName,Phone)
+VALUES ('Bouchard Corporation',18775559289);
+INSERT INTO supplier (SName,Phone)
+VALUES ('Roux '||chr(38)||' Martin',18775554637);
+INSERT INTO supplier (SName,Phone)
+VALUES ('Cormorant Group',18775554323);
+
+/* Entries for movie */
+INSERT INTO movie(Eidr,Title,Director,Genre)
+VALUES ('10.5240/B6D3-D1ED-71C0-3A43-3243-8', 'Angel''s Egg', 'Mamoru Oshii', 'Avant-garde');
+INSERT INTO movie(Eidr,Title,Director,Genre)
+VALUES ('10.5240/102A-940C-175A-E086-85A5-R', 'Primer', 'Shane Carruth', 'Science Fiction');
+INSERT INTO movie(Eidr,Title,Director,Genre)
+VALUES ('10.5240/29D8-1A67-BB8F-1109-1353-5', 'Oldboy', 'Park Chan-wook', 'Neo-noir');
+INSERT INTO movie(Eidr,Title,Director,Genre)
+VALUES ('10.5240/9AA7-751E-97E3-8E0C-3104-8', 'Cube', 'Vincenzo Natali', 'Horror');
+INSERT INTO movie(Eidr,Title,Director,Genre)
+VALUES ('10.5240/2CD5-A900-F1EA-13D5-BDEE-A', 'Stalker', 'Andrei Tarkovsky', 'Science Fiction');
+INSERT INTO movie(Eidr,Title,Director,Genre)
+VALUES ('10.5240/D3EF-4473-263B-DBFF-67A0-1', 'The Sky Crawlers', 'Mamoru Oshii', 'Science Fiction');
+
+/* Entries for mcopy */
+INSERT INTO mcopy(Eidr,CopyNum)
+VALUES ('10.5240/B6D3-D1ED-71C0-3A43-3243-8',1);
+INSERT INTO mcopy(Eidr,CopyNum)
+VALUES ('10.5240/B6D3-D1ED-71C0-3A43-3243-8',2);
+
+INSERT INTO mcopy(Eidr,CopyNum)
+VALUES ('10.5240/102A-940C-175A-E086-85A5-R',1);
+INSERT INTO mcopy(Eidr,CopyNum)
+VALUES ('10.5240/102A-940C-175A-E086-85A5-R',2);
+INSERT INTO mcopy(Eidr,CopyNum)
+VALUES ('10.5240/102A-940C-175A-E086-85A5-R',3);
+
+INSERT INTO mcopy(Eidr,CopyNum)
+VALUES ('10.5240/29D8-1A67-BB8F-1109-1353-5',1);
+INSERT INTO mcopy(Eidr,CopyNum)
+VALUES ('10.5240/29D8-1A67-BB8F-1109-1353-5',2);
+
+INSERT INTO mcopy(Eidr,CopyNum)
+VALUES ('10.5240/9AA7-751E-97E3-8E0C-3104-8',1);
+INSERT INTO mcopy(Eidr,CopyNum)
+VALUES ('10.5240/9AA7-751E-97E3-8E0C-3104-8',2);
+
+INSERT INTO mcopy(Eidr,CopyNum)
+VALUES ('10.5240/2CD5-A900-F1EA-13D5-BDEE-A',1);
+
+INSERT INTO mcopy(Eidr,CopyNum)
+VALUES ('10.5240/D3EF-4473-263B-DBFF-67A0-1',1);
+INSERT INTO mcopy(Eidr,CopyNum)
+VALUES ('10.5240/D3EF-4473-263B-DBFF-67A0-1',2);
+INSERT INTO mcopy(Eidr,CopyNum)
+VALUES ('10.5240/D3EF-4473-263B-DBFF-67A0-1',3);
+
+/* Entries for mborrow */
+INSERT INTO mborrow (LibCard, Eidr, CopyNum, DueDate, ReturnDate)
+VALUES (2020763382, '10.5240/B6D3-D1ED-71C0-3A43-3243-8', 1, TO_DATE('2-Jan-2019','yyy/mm/dd hh24:mi:ss'), NULL);
+INSERT INTO mborrow (LibCard, Eidr, CopyNum, DueDate, ReturnDate)
+VALUES (2020763382, '10.5240/9AA7-751E-97E3-8E0C-3104-8', 1, TO_DATE('2-Jan-2019','yyy/mm/dd hh24:mi:ss'), NULL);
+INSERT INTO mborrow (LibCard, Eidr, CopyNum, DueDate, ReturnDate)
+VALUES (2020763382, '10.5240/2CD5-A900-F1EA-13D5-BDEE-A', 1, TO_DATE('2-Jan-2019','yyy/mm/dd hh24:mi:ss'), NULL);
+INSERT INTO mborrow (LibCard, Eidr, CopyNum, DueDate, ReturnDate)
+VALUES (3094648686, '10.5240/B6D3-D1ED-71C0-3A43-3243-8', 2, TO_DATE('20-Jan-2019','yyy/mm/dd hh24:mi:ss'), NULL);
+INSERT INTO mborrow (LibCard, Eidr, CopyNum, DueDate, ReturnDate)
+VALUES (9197832769, '10.5240/D3EF-4473-263B-DBFF-67A0-1', 1, TO_DATE('23-Jan-2019','yyy/mm/dd hh24:mi:ss'), NULL);
+INSERT INTO mborrow (LibCard, Eidr, CopyNum, DueDate, ReturnDate)
+VALUES (4315697185, '10.5240/D3EF-4473-263B-DBFF-67A0-1', 2, TO_DATE('1-Jan-2019','yyy/mm/dd hh24:mi:ss'), NULL);
+INSERT INTO mborrow (LibCard, Eidr, CopyNum, DueDate, ReturnDate)
+VALUES (1843174371, '10.5240/D3EF-4473-263B-DBFF-67A0-1', 3, TO_DATE('3-Jan-2019','yyy/mm/dd hh24:mi:ss'), NULL);
+
+/* Entries for msupply */
+INSERT INTO msupply(Order#,SName,Eidr,Quantity,Shipped)
+VALUES (000000000001, 'Roux '||chr(38)||' Martin', '10.5240/2CD5-A900-F1EA-13D5-BDEE-A', 2, 0);
+INSERT INTO msupply(Order#,SName,Eidr,Quantity,Shipped)
+VALUES (000000000002, 'Roux '||chr(38)||' Martin', '10.5240/29D8-1A67-BB8F-1109-1353-5', 1, 1);
+
+INSERT INTO msupply(Order#,SName,Eidr,Quantity,Shipped)
+VALUES (000000000003, 'Cormorant Group', '10.5240/29D8-1A67-BB8F-1109-1353-5', 1, 1);
+INSERT INTO msupply(Order#,SName,Eidr,Quantity,Shipped)
+VALUES (000000000004, 'Cormorant Group', '10.5240/9AA7-751E-97E3-8E0C-3104-8', 2, 0);
+
+INSERT INTO msupply(Order#,SName,Eidr,Quantity,Shipped)
+VALUES (000000000005, 'Bouchard Corporation', '10.5240/102A-940C-175A-E086-85A5-R', 1, 0);
+INSERT INTO msupply(Order#,SName,Eidr,Quantity,Shipped)
+VALUES (000000000006, 'Bouchard Corporation', '10.5240/B6D3-D1ED-71C0-3A43-3243-8', 2, 0);
+INSERT INTO msupply(Order#,SName,Eidr,Quantity,Shipped)
+VALUES (000000000007, 'Bouchard Corporation', '10.5240/9AA7-751E-97E3-8E0C-3104-8', 1, 0);
+
+/* Entries for bsupply */
+INSERT INTO bsupply(Order#,SName,Isbn,Quantity,Shipped)
+VALUES (000000000008, 'Henderson Press', '978-0345339706', 2, 1);
+INSERT INTO bsupply(Order#,SName,Isbn,Quantity,Shipped)
+VALUES (000000000009, 'Henderson Press', '978-0345339713', 3, 1);
+INSERT INTO bsupply(Order#,SName,Isbn,Quantity,Shipped)
+VALUES (000000000010, 'Henderson Press', '978-0345339737', 1, 1);
+INSERT INTO bsupply(Order#,SName,Isbn,Quantity,Shipped)
+VALUES (000000000011, 'Kingfisher Publications', '978-0849945120', 3, 1);
+INSERT INTO bsupply(Order#,SName,Isbn,Quantity,Shipped)
+VALUES (000000000012, 'Pygmy Press', '978-0060935467', 2, 1);
+
+/* Entries for bhold */
+INSERT INTO bhold(LibCard, Isbn, PlaceNum, HoldDate)
+VALUES (3094648686, '978-0345339706', 1, TO_DATE('29-Dec-2019','yyy/mm/dd hh24:mi:ss'));
+INSERT INTO bhold(LibCard, Isbn, PlaceNum, HoldDate)
+VALUES (3094648686, '978-0345339713', 1, TO_DATE('29-Dec-2019','yyy/mm/dd hh24:mi:ss'));
+INSERT INTO bhold(LibCard, Isbn, PlaceNum, HoldDate)
+VALUES (1843174371, '978-0345339706', 2, TO_DATE('30-Dec-2019','yyy/mm/dd hh24:mi:ss'));
+
+/* Entries for mhold */
+INSERT INTO mhold(LibCard, Eidr, PlaceNum, HoldDate)
+VALUES (1843174372, '10.5240/D3EF-4473-263B-DBFF-67A0-1', 1, TO_DATE('28-Dec-2019','yyy/mm/dd hh24:mi:ss'));
+INSERT INTO mhold(LibCard, Eidr, PlaceNum, HoldDate)
+VALUES (1843174372, '10.5240/B6D3-D1ED-71C0-3A43-3243-8', 1, TO_DATE('28-Dec-2019','yyy/mm/dd hh24:mi:ss'));
+INSERT INTO mhold(LibCard, Eidr, PlaceNum, HoldDate)
+VALUES (5743830293, '10.5240/D3EF-4473-263B-DBFF-67A0-1', 2, TO_DATE('31-Dec-2019','yyy/mm/dd hh24:mi:ss'));
+
+/* QUERIES */
+/* Member who live in toronto */
+SELECT * 
+FROM member
+WHERE City = 'Toronto';
+
+/* Books written by J.R.R. Tolkien */
+SELECT Title As Book_Title, Author
+FROM book
+WHERE Author = 'J.R.R. Tolkien';
+
+/* Book copies with isbn 978-0849945120 (Thr3e) */
+SELECT * 
+FROM bcopy
+WHERE ISBN = '978-0849945120';
+
+/* Books borrowed by LibCard 1843174372 (Laura) */
+SELECT LibCard, Title, CopyNum, DueDate 
+FROM book, bborrow
+WHERE LibCard = 1843174372
+AND bborrow.Isbn = book.Isbn;
+
+/* Movies by Shane Carruth */
+SELECT Title As Movie_Title, Director
+FROM movie
+WHERE Director = 'Shane Carruth';
+
+/* Get suppliers who are still shipping the movie Cube and their phone number(s)*/
+SELECT msupply.SName, Eidr, Phone, Shipped
+FROM msupply, supplier
+WHERE msupply.SName = supplier.SName
+AND Eidr = '10.5240/9AA7-751E-97E3-8E0C-3104-8'
+AND Shipped = 0;
+
+/* Get all copies of science fiction movies */
+SELECT Title As Movie_Title, CopyNum, Genre
+FROM movie, mcopy
+WHERE Genre = 'Science Fiction'
+  AND movie.Eidr = mcopy.Eidr;
+
+/* Get all suppliers who have shipped their movies */
+SELECT SName As Supplier_Name, Shipped
+FROM msupply
+WHERE Shipped = 1;
+
+/* Movies borrowed by Library Card 2020763382 (Susan) */
+SELECT LibCard, Title, CopyNum, DueDate 
+FROM movie, mborrow
+WHERE LibCard = 2020763382
+AND movie.Eidr = mborrow.Eidr;
+
+/* What did Henderson Press supply? */
+SELECT Sname, Title, Author, Quantity 
+FROM bsupply, book
+WHERE Sname = 'Henderson Press'
+  AND Shipped = 1
+  AND bsupply.Isbn = book.Isbn;
+
+/* What does the person with LibCard 3094648686 have holds on? */
+SELECT Name, Title, PlaceNum, HoldDate
+FROM bhold, book, member
+WHERE bhold.LibCard = 3094648686
+  AND bhold.Isbn = book.Isbn
+  AND bhold.LibCard = member.LibCard;
+
+/* Who has holds on The Sky Crawlers 10.5240/D3EF-4473-263B-DBFF-67A0-1 */
+SELECT mhold.LibCard, Name
+FROM mhold, member
+WHERE mhold.LibCard = member.LibCard
+  AND Eidr = '10.5240/D3EF-4473-263B-DBFF-67A0-1';
+
+/*ADVANCED QUERIES*/
+/* Join - Get the names and phone numbers of all members who are borrowing Lord of the Rings: The Fellowship of the Ring */
+SELECT Phone, Name
+FROM member m, bborrow b
+WHERE m.LibCard = b.LibCard 
+AND Isbn = '978-0345339706';
+	
+/* Group - Get all the members borrowing To Kill a Mockingbird grouped by city */
+SELECT City, Name
+FROM member, bborrow
+WHERE member.LibCard = bborrow.LibCard
+	AND Isbn = '978-0345339706'
+	GROUP BY City,Name;
+	
+/* Set - List the suppliers who have more than two books in supply */
+SELECT SName
+FROM supplier
+WHERE EXISTS
+(SELECT Isbn
+	FROM bsupply
+	WHERE bsupply.SName = supplier.SName
+	AND Quantity > 2); 
+  
+/* Like - list all authors starting with J */
+SELECT Author, Title
+FROM book
+WHERE Author LIKE 'J%'
+
+/* Aggregate - List number of members */
+SELECT 'Number of members is ', Count(LibCard)
+FROM member;
+
+/* Creating Views */
+/* View to see all books that are borrowed */
+CREATE VIEW booksCurrentlyBorrowed AS
+(SELECT book.Isbn, Title, Author, Genre,
+bborrow.CopyNum, bborrow.LibCard, Name, DueDate, ReturnDate 
+FROM bborrow, book, bcopy, member
+WHERE ReturnDate IS NULL
+AND bborrow.LibCard = member.LibCard
+AND bborrow.Isbn = bcopy.Isbn
+AND bcopy.Isbn = book.Isbn);
+
+/* View to see all movies that are on borrowed */
+CREATE VIEW moviesCurrentlyBorrowed AS
+(SELECT movie.Eidr, Title, Director, Genre,
+mborrow.CopyNum, mborrow.LibCard, Name, DueDate, ReturnDate 
+FROM mborrow, movie, mcopy, member
+WHERE ReturnDate IS NULL
+AND mborrow.LibCard = member.LibCard
+AND mborrow.Eidr = mcopy.Eidr
+AND mcopy.Eidr = movie.Eidr);

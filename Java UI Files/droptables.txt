@@ -1,0 +1,12 @@
+DROP TABLE msupply
+DROP TABLE bsupply
+DROP TABLE bborrow
+DROP TABLE mborrow
+DROP TABLE bhold
+DROP TABLE mhold
+DROP TABLE bcopy
+DROP TABLE mcopy
+DROP TABLE book
+DROP TABLE movie
+DROP TABLE supplier
+DROP TABLE member
